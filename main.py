@@ -13,16 +13,15 @@ sift1.construir_piramides(4, sift1.octaves)
 #sift1.showPyramids()
 #Se encuentran los candidatos a keypoints
 sift1.detectar_extremos()
+#sift1.showKeyPoints()
 sift1.calcular_magnitud_gradiente()
 sift1.calcular_histogama_regiones()
 sift1.calcular_descriptor()
-
-
 #sift1.mostrar_histograma(sift1.descriptor[0])
 
 
 #Se hace el mismo procesao para una segunda imagen
-img2 = cv2.imread('images/ejemplo1_2.jpg')
+img2 = cv2.imread('images/ejemplo1_3.jpg')
 cv2.imshow('img2', img2)
 sift2 = sift.SIFT(img2, 4, 1, 36)
 sift2.construir_piramides(4, sift2.octaves)
@@ -33,5 +32,5 @@ sift2.calcular_histogama_regiones()
 sift2.calcular_descriptor()
 #sift2.mostrar_histograma(sift2.descriptor[0])
 
-sift1.matching_descriptores(sift1, sift2)
-sift1.showMatches(sift1.img, sift2.img)
+sift1.match_descriptors(sift2)
+sift1.mostrar_matches_manual( sift2, img1, img2)

@@ -443,60 +443,137 @@ class SIFT:
 
     #     self.matches = matches
 
-    def encontrar_mejor_match(self, descriptor, descriptoresObjeto2):
-        #Se usa el metodo de fuerza bruta para encontrar el mejor match
-        descriptor = np.array(descriptor)
-        mejor_match = None
+    # def encontrar_mejor_match(self, descriptor, descriptoresObjeto2):
+    #     #Se usa el metodo de fuerza bruta para encontrar el mejor match
+    #     descriptor = np.array(descriptor)
+    #     mejor_match = None
 
-        for i in range(len(descriptoresObjeto2)):
-            descriptor2 = np.array(descriptoresObjeto2[i])
-            distancia = np.linalg.norm(descriptor - descriptor2)
-            if mejor_match is None or distancia < mejor_match[1]:
-                mejor_match = (i, distancia)
+    #     for i in range(len(descriptoresObjeto2)):
+    #         descriptor2 = np.array(descriptoresObjeto2[i])
+    #         distancia = np.linalg.norm(descriptor - descriptor2)
+    #         if mejor_match is None or distancia < mejor_match[1]:
+    #             mejor_match = (i, distancia)
         
-        return mejor_match
+    #     return mejor_match
     
 
-    def matching_descriptores(self, sift_objeto1, sift_objeto2):
-        #Encuentra k matches a dibujar
-        k = 1000
+    # def matching_descriptores(self, sift_objeto2):
 
-        for i in range(k):
+    #     #Se emprime la lista de descriptores
+    #     print("Lista de descriptores: ", self.descriptor)
+    #     print("Lista de descriptores: ", sift_objeto2.descriptor)
 
-            #Se hace una permutación de los descriptores
-            np.random.shuffle(sift_objeto1.descriptor)
-            np.random.shuffle(sift_objeto2.descriptor)
+    #     #Encuentra k matches a dibujar
+    #     k = 1000
 
-            #Se toma el primer descriptor de la permutación
-            descriptor = sift_objeto1.descriptor[0]
+    #     while True:
 
-            #Se encuentra el mejor match para el descriptor
-            mejor_match = self.encontrar_mejor_match(descriptor, sift_objeto2.descriptor)
 
-            #Se agrega el mejor match a la lista de matches
-            self.matches.append(mejor_match)
+            
+    #         #Se hace una permutación de los descriptores manualmente
+    #         lista1 = self.descriptor.copy()
+    #         lista2 = sift_objeto2.descriptor.copy()
 
-            k -= 1
+    #         #Se desordena la lista 1
+    #         np.random.shuffle(lista1)
 
-            if k == 0:
-                break
+    #         #Se desordena la lista 2
+    #         np.random.shuffle(lista2)
+
+
+    #         #Se toma el primer descriptor de la permutación
+    #         descriptor = lista1[0]
+
+    #         #Se encuentra el mejor match para el descriptor
+    #         mejor_match = self.encontrar_mejor_match(descriptor, lista2)
+
+    #         #Se agrega el mejor match a la lista de matches
+    #         self.matches.append((descriptor, lista2[mejor_match[0]]))
+
+    #         k -= 1
+
+    #         if k == 0:
+    #             break
 
     
-    def showMatches(self, img1, img2):
-        # Ordenar los emparejamientos por el ratio
-        self.matches.sort(key=lambda x: x[1])
+    # def showMatches(self, img1, img2):
+    #     #Se imprime la cantidad de matches
+    #     print("Numero de matches: ", len(self.matches))
+    #     print("Matches: ", self.matches)
+    #     #Se obtienen los keypoints emparejados
+    #     matched_keypoints1 = []
+    #     matched_keypoints2 = []
 
-        # Obtener los índices de los descriptores emparejados
-        matches_idx = [match[0] for match in self.matches]
+    #     for match in self.matches:
+    #         matched_keypoints1.append(match[0])
+    #         matched_keypoints2.append(match[1])
 
-        # Obtener los puntos clave emparejados
-        keypoints1 = np.array([self.keyPoints[i][2:4] for i in range(len(self.keyPoints))])
-        keypoints2 = np.array([self.keyPoints[i][2:4] for i in range(len(self.keyPoints))])
+    #     #Se concatenan las imagenes y 
+    #     img_concat = np.zeros((max(img1.shape[0], img2.shape[0]), max(img1.shape[1], img2.shape[1]) + min(img1.shape[1], img2.shape[1])))
+    #     img_concat = img_concat.astype(np.uint8)
+        
 
-        # Obtener los puntos clave emparejados
-        matched_keypoints1 = keypoints1[matches_idx]
-        matched_keypoints2 = keypoints2[matches_idx]
+    #     #Se coloca la imagen 1 en la imagen concatenada
+    #     for i in range(img1.shape[0]):
+    #         for j in range(img1.shape[1]):
+    #             img_concat[i,j] = img1[i,j]
+        
+    #     #Se coloca la imagen 2 en la imagen concatenada
 
+    #     for i in range(img2.shape[0]):
+    #         for j in range(img2.shape[1]):
+    #             img_concat[i,j+img1.shape[1]] = img2[i,j]
+
+        
+    #     #Se crea el plot de los matches
+    #     plt.figure(figsize=(20, 20))
+    #     plt.imshow(img_concat, cmap='gray')
+
+    #     #Se dibujan las lineas entre los keypoints emparejados
+    #     for i in range(len(matched_keypoints1)):
+    #         plt.plot([matched_keypoints1[i][2], matched_keypoints2[i][2] + img1.shape[1]], [matched_keypoints1[i][3], matched_keypoints2[i][3]], color='r', linewidth=0.5)
+
+    #     plt.show()
+
+        
+        
+    def match_descriptors(self, other_sift):
+        # Verificar que ambos objetos SIFT tengan descriptores calculados
+        if self.descriptor is None or other_sift.descriptor is None:
+            raise ValueError("Los descriptores no han sido calculados en ambas imágenes.")
+
+        # Crear el árbol KD con los descriptores de la otra imagen
+        tree = cKDTree(other_sift.descriptor)
+
+        matches = []
+        distance_threshold = 0.7  # Puedes ajustar este umbral según tus necesidades
+
+        for i, descriptor in enumerate(self.descriptor):
+            # Encontrar el descriptor más cercano en la otra imagen
+            _, idx = tree.query(descriptor)
+
+            # Verificar si la distancia está por debajo del umbral
+            if _ < distance_threshold:
+                matches.append((i, idx))
+
+        self.matches = matches
+        print("Numero de matches: ", len(self.matches))
+        return matches
+    
+    def mostrar_matches_manual(self, other_sift, img1, img2):
+        if self.matches is None:
+            raise ValueError("Realiza el emparejamiento de descriptores antes de visualizar los matches.")
+
+        # Obtén las coordenadas de los keypoints emparejados
+        keypoints_img1 = np.array([self.keyPoints[i[0]][2::-1] for i in self.matches])
+        keypoints_img2 = np.array([other_sift.keyPoints[i[1]][2::-1] for i in self.matches])
+
+
+
+        img1 = cv2.cvtColor(img1, cv2.COLOR_BGR2GRAY)
+        img2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
+        
+        
         #Se concatenan las imagenes y 
         img_concat = np.zeros((max(img1.shape[0], img2.shape[0]), max(img1.shape[1], img2.shape[1]) + min(img1.shape[1], img2.shape[1])))
         img_concat = img_concat.astype(np.uint8)
@@ -513,25 +590,20 @@ class SIFT:
             for j in range(img2.shape[1]):
                 img_concat[i,j+img1.shape[1]] = img2[i,j]
 
-        
-        #Se crea el plot de los matches
-        plt.figure(figsize=(20, 20))
+        # Dibuja líneas entre los keypoints emparejados
+        for i in range(len(keypoints_img1)):
+            print(keypoints_img1[i])
+            x1, y1 = keypoints_img1[i]
+
+            x2 += img1.shape[1]  # Ajusta la coordenada x para la segunda imagen
+            plt.plot([x1, x2], [y1, y2], 'c-', linewidth=1)
+
+        # Muestra la imagen con líneas de matches
+        plt.figure(figsize=(12, 6))
         plt.imshow(img_concat, cmap='gray')
-
-        #Se dibuja una linea entre los puntos clave emparejados
-        for i in range(len(matched_keypoints1)):
-            plt.plot(
-                [matched_keypoints1[i][1], matched_keypoints2[i][1] + img1.shape[1]],
-                [matched_keypoints1[i][0], matched_keypoints2[i][0]],
-                color='r',
-                linewidth=0.5,
-            )
-
+        plt.title('Matches SIFT (Manual)')
         plt.show()
 
-        
-        
-        
 
     
 
