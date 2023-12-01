@@ -1,5 +1,4 @@
-# Practica 4 - Segmentación
-
+# Practica 4 - SIFT
 ## Integrantes
 
 | Integrante                       | Github                           |
